@@ -3,5 +3,7 @@ This is done to learn and gain an insight towards combining two topics in AI, i.
 Some material for Cartpole environment
 
 https://github.com/openai/gym/wiki/CartPole-v0
+
 http://kvfrans.com/simple-algoritms-for-solving-cartpole/
+
 https://gym.openai.com/docs
