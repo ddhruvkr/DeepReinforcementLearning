@@ -9,6 +9,7 @@ import gym
 import matplotlib.pyplot as plt
 
 def buildStates(bins):
+	#print(bins)
 	return int("".join(map(lambda s:str(int(s)), bins)))
 
 def getBin(x, bins):
@@ -18,13 +19,24 @@ def getBin(x, bins):
 class FeatureTransformer:
 
 	def __init__(self):
-		self.cartPosition = np.linspace(-2.4,2,4,9)
-		self.cartVelocity = np.linspace(-2,2,9)
-		self.poleAngle = np.linspace(-0.4,0.4,9)
-		self.poleVelocity = np.linspace(-3.5,3.5,9)
+		self.cartPosition = np.linspace(-2.4,2.4,1)
+		self.cartVelocity = np.linspace(-2,2,1)
+		self.poleAngle = np.linspace(-0.4,0.4,3)
+		self.poleVelocity = np.linspace(-3.5,3.5,6)
+
+		'''self.cartPosition = np.linspace(-0.8,0.8,1)
+		self.cartVelocity = np.linspace(-0.5,0.5,1)
+		self.poleAngle = np.linspace(-0.1047192,0.1047192,3)
+		self.poleVelocity = np.linspace(-0.87,0.87,3)'''
 
 	def transform(self, observation):
 		cartPosition, cartVelocity, poleAngle, poleVelocity = observation
+		#print(getBin(cartPosition, self.cartPosition))
+		#print(getBin(cartVelocity, self.cartVelocity))
+		#print(getBin(poleAngle, self.poleAngle))
+		#print(getBin(poleVelocity, self.poleVelocity))
+		#print("hel")
+		
 		return buildStates([
 			getBin(cartPosition, self.cartPosition),
 			getBin(cartVelocity, self.cartVelocity),
@@ -41,6 +53,7 @@ class Model:
 		self.Q = np.random.uniform(low=-1, high=1, size=(noOfStates, noOfActions))
 
 	def predict(self, observation):
+		#print(observation)
 		return self.Q[self.featureTransformer.transform(observation)]
 
 	def getAction(self, observation, eps):
@@ -52,7 +65,7 @@ class Model:
 
 	def updateQ(self, observation, action, g):
 		state = self.featureTransformer.transform(observation)
-		self.Q[state][action] += 0.01 * (g - self.Q[state][action])
+		self.Q[state][action] += 0.001 * (g - self.Q[state][action])
 
 
 
@@ -90,14 +103,14 @@ if __name__ == '__main__':
 	env = gym.make('CartPole-v0')
 	featureTransformer = FeatureTransformer()
 	model = Model(featureTransformer, env)
-	gamma = 0.9
+	gamma = 0.001
 
 	'''if 'monitor' in sys.argv:
 	filename = os.path.basename(__file__).split('.')[0]
 	monitor_dir = './' + filename + '_' + str(datetime.now())
 	env = wrappers.Monitor(env, monitor_dir)'''
 
-	N = 10000
+	N = 1000
 	totalRewards = np.empty(N)
 	for n in range(N):
 		eps = 1.0/np.sqrt(n+1)
@@ -105,6 +118,7 @@ if __name__ == '__main__':
 		totalRewards[n] = totalReward
 		if n % 100 == 0:
 			print("episode:", n, "total reward:", totalReward, "eps:", eps)
+			runningAverage(totalRewards)
 	print("avg reward for last 100 episodes:", totalRewards[-100:].mean())
 	print("total steps:", totalRewards.sum())
 
